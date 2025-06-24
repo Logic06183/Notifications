@@ -80,6 +80,55 @@
             border-color: #667eea;
         }
 
+        .search-input {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .export-btn.json {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+        }
+
+        .export-btn.json:hover {
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+        }
+
         .generate-btn {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -322,6 +371,10 @@
 
         <div class="controls">
             <div class="control-group">
+                <label for="searchInput">🔍 Search Studies</label>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by code, title, country, or organization...">
+            </div>
+            <div class="control-group">
                 <label for="countryFilter">Filter by Country</label>
                 <select id="countryFilter">
                     <option value="">All Countries</option>
@@ -340,6 +393,10 @@
                     <option value="RP1">RP1 Studies</option>
                     <option value="RP2">RP2 Studies</option>
                 </select>
+            </div>
+            <div class="export-buttons">
+                <button class="export-btn json" onclick="exportJson()">JSON</button>
+                <button class="export-btn csv" onclick="exportCsv()">CSV</button>
             </div>
             <button class="generate-btn" onclick="generateNotification()">
                 🔔 Generate Notification
@@ -1290,17 +1347,23 @@
             countrySelect.addEventListener('change', applyFilters);
             statusSelect.addEventListener('change', applyFilters);
             document.getElementById('rpFilter').addEventListener('change', applyFilters);
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
         }
 
         function applyFilters() {
             const countryFilter = document.getElementById('countryFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
             const rpFilter = document.getElementById('rpFilter').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
 
             filteredStudies = allStudies.filter(study => {
                 return (!countryFilter || study.country === countryFilter) &&
                        (!statusFilter || study.status === statusFilter) &&
-                       (!rpFilter || study.type === rpFilter);
+                       (!rpFilter || study.type === rpFilter) &&
+                       (study.code.toLowerCase().includes(searchQuery) ||
+                        study.title.toLowerCase().includes(searchQuery) ||
+                        study.country.toLowerCase().includes(searchQuery) ||
+                        study.organization.toLowerCase().includes(searchQuery));
             });
 
             renderStudies();
@@ -1511,6 +1574,38 @@
                     btn.style.background = '#28a745';
                 }, 2000);
             });
+        }
+
+        function exportJson() {
+            const data = JSON.stringify(allStudies, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'study_data.json';
+            a.click();
+        }
+
+        function exportCsv() {
+            const data = allStudies.map(study => {
+                return [
+                    study.code,
+                    study.title,
+                    study.country,
+                    study.status,
+                    study.type,
+                    study.organization,
+                    study.priority,
+                    study.sample_size,
+                    study.contact
+                ].join(',');
+            }).join('\n');
+            const blob = new Blob([data], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'study_data.csv';
+            a.click();
         }
 
         // Initialize dashboard when page loads
