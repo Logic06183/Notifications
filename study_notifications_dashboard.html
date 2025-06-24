@@ -582,15 +582,65 @@
             "ZMB530": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_final_UCT/ZMB530_Hamer_BU_UNIVERSITY OF CAPE TOWN_DTA_Template_HEAT001_FE.pdf"
         };
 
-        // Function to open DTA file
-        function openDtaFile(studyCode) {
+        // Function to derive DTA metadata from folder path
+        function getDtaMetadataFromPath(filePath) {
+            if (!filePath) return { template: 'N/A', recipient: 'N/A', status: 'N/A' };
+            
+            // Extract folder name from path
+            const pathParts = filePath.split('/');
+            const folderName = pathParts[pathParts.length - 2]; // Get the folder name
+            
+            let template, recipient, status;
+            
+            if (folderName.includes('DTAs_though_WHC')) {
+                template = 'old';
+                recipient = 'WHC';
+                status = 'executed';
+            } else if (folderName.includes('DTAs_through_UCT')) {
+                template = 'old';
+                recipient = 'UCT';
+                status = 'executed';
+            } else if (folderName.includes('New DTAs_drafts_WHC')) {
+                template = 'new';
+                recipient = 'WHC';
+                status = 'draft';
+            } else if (folderName.includes('New DTAs_final_UCT')) {
+                template = 'new';
+                recipient = 'UCT';
+                status = 'final';
+            } else if (folderName.includes('New DTAs_fully executed_WHC')) {
+                template = 'new';
+                recipient = 'WHC';
+                status = 'fully_executed';
+            } else {
+                template = 'N/A';
+                recipient = 'N/A';
+                status = 'N/A';
+            }
+            
+            return { template, recipient, status };
+        }
+
+        // Function to show DTA file information
+        function showDtaFileInfo(studyCode) {
             const filePath = dtaFileMappings[studyCode];
             if (filePath) {
-                // Use file:// protocol to open local files
-                const fileUrl = 'file://' + encodeURIComponent(filePath).replace(/%2F/g, '/');
-                window.open(fileUrl, '_blank');
+                const fileName = filePath.split('/').pop();
+                const metadata = getDtaMetadataFromPath(filePath);
+                
+                alert(`DTA File Information for ${studyCode}:
+
+📁 Folder: ${filePath.split('/').slice(-2, -1)[0]}
+📄 File: ${fileName}
+📋 Template: ${metadata.template.toUpperCase()}
+🏛️ Recipient: ${metadata.recipient}
+📑 Status: ${metadata.status.replace('_', ' ').toUpperCase()}
+
+📍 Full Path: ${filePath}
+
+Note: To open this file, navigate to the path above on your local machine.`);
             } else {
-                alert(`DTA file not found for study ${studyCode}`);
+                alert(`No DTA file mapped for study ${studyCode}`);
             }
         }
 
@@ -1573,15 +1623,22 @@
             let linkClass = 'dta-link missing';
             let linkText = 'No DTA File';
             
+            // Get metadata from folder structure (this overrides any hardcoded values)
+            let dtaMetadata = { template: 'N/A', recipient: 'N/A', status: 'N/A' };
+            
             if (dtaFilePath) {
                 if (dtaFilePath.includes('[filename_TBD]') || dtaFilePath.includes('[multiple_files]')) {
                     fileStatus = 'placeholder';
                     linkClass = 'dta-link missing';
                     linkText = 'File TBD';
+                    // Still get metadata from folder even for placeholder files
+                    dtaMetadata = getDtaMetadataFromPath(dtaFilePath);
                 } else {
                     fileStatus = 'available';
                     linkClass = 'dta-link';
-                    linkText = 'View DTA';
+                    linkText = 'View DTA Info';
+                    // Get actual metadata from folder structure
+                    dtaMetadata = getDtaMetadataFromPath(dtaFilePath);
                 }
             }
 
@@ -1591,6 +1648,7 @@
                         <div class="study-code">${study.code}</div>
                         <div class="study-status ${statusClass}">${study.status}</div>
                     </div>
+                    <div class="study-priority ${priorityClass}">${study.priority}</div>
                 </div>
                 <div class="study-description">${study.title}</div>
                 <div class="study-meta">
@@ -1614,20 +1672,20 @@
                         <span>📄</span>
                         <span>
                             <span class="file-status-indicator ${fileStatus}"></span>
-                            <a href="#" class="${linkClass}" onclick="event.stopPropagation(); ${fileStatus === 'available' ? `openDtaFile('${study.code}')` : `alert('DTA file not available for ${study.code}')`}; return false;">${linkText}</a>
+                            <a href="#" class="${linkClass}" onclick="event.stopPropagation(); ${fileStatus === 'available' ? `showDtaFileInfo('${study.code}')` : `alert('DTA file not available for ${study.code}')`}; return false;">${linkText}</a>
                         </span>
                     </div>
                     <div class="meta-item">
                         <span>📋</span>
-                        <span>Template: ${study.dta_template || 'N/A'}</span>
+                        <span>Template: ${dtaMetadata.template.toUpperCase()}</span>
                     </div>
                     <div class="meta-item">
                         <span>🏛️</span>
-                        <span>Recipient: ${study.main_recipient || 'N/A'}</span>
+                        <span>Recipient: ${dtaMetadata.recipient}</span>
                     </div>
                     <div class="meta-item">
                         <span>📑</span>
-                        <span>Status: ${study.dta_status || 'N/A'}</span>
+                        <span>DTA Status: ${dtaMetadata.status.replace('_', ' ').toUpperCase()}</span>
                     </div>
                 </div>
             `;
