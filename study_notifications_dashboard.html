@@ -211,15 +211,25 @@
             color: var(--text-color);
         }
 
+        .study-card.selected {
+            border-left-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .study-card.no-dta-file {
+            border-left-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.05);
+        }
+
+        .study-card.has-dta-file {
+            border-left-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+
         .study-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px var(--shadow);
             background: var(--card-hover);
-        }
-
-        .study-card.selected {
-            border-left-color: #4CAF50;
-            background: rgba(76, 175, 80, 0.05);
         }
 
         .study-header {
@@ -426,6 +436,19 @@
             background: #f39c12;
         }
 
+        .dta-metadata-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .dta-template, .dta-recipient, .dta-status {
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-right: 20px;
+        }
+
         @media (max-width: 768px) {
             .controls {
                 grid-template-columns: 1fr;
@@ -465,32 +488,40 @@
                 <div class="stat-number" id="selectedCount">0</div>
                 <div class="stat-label">Selected</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-number" id="dtaCoverage">0%</div>
+                <div class="stat-label">DTA File Coverage</div>
+            </div>
         </div>
 
         <div class="controls">
-            <div class="control-group">
-                <label for="searchInput">🔍 Search Studies</label>
-                <input type="text" id="searchInput" class="search-input" placeholder="Search by code, title, country, or organization...">
-            </div>
-            <div class="control-group">
-                <label for="countryFilter">Filter by Country</label>
-                <select id="countryFilter">
+            <div class="filters">
+                <select id="countryFilter" aria-label="Filter by country">
                     <option value="">All Countries</option>
                 </select>
-            </div>
-            <div class="control-group">
-                <label for="statusFilter">Filter by Status</label>
-                <select id="statusFilter">
+                <select id="statusFilter" aria-label="Filter by status">
                     <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="follow_up">Follow Up</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <select id="typeFilter" aria-label="Filter by study type">
+                    <option value="">All Types</option>
+                    <option value="initial">Initial</option>
+                    <option value="amendment">Amendment</option>
+                    <option value="supplemental">Supplemental</option>
+                </select>
+                <select id="dtaFileFilter" aria-label="Filter by DTA file availability">
+                    <option value="">All Studies</option>
+                    <option value="has_dta">With DTA Files</option>
+                    <option value="no_dta">Without DTA Files</option>
+                    <option value="spreadsheet_only">Spreadsheet Only</option>
                 </select>
             </div>
-            <div class="control-group">
-                <label for="rpFilter">Filter by RP</label>
-                <select id="rpFilter">
-                    <option value="">All Studies</option>
-                    <option value="RP1">RP1 Studies</option>
-                    <option value="RP2">RP2 Studies</option>
-                </select>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search studies..." aria-label="Search studies" />
+                <button id="clearSearch">Clear</button>
             </div>
             <div class="export-buttons">
                 <button class="export-btn json" onclick="exportJson()">JSON</button>
@@ -1434,10 +1465,31 @@
         let selectedStudies = [];
         let filteredStudies = allStudies;
 
+        function setupEventListeners() {
+            const countrySelect = document.getElementById('countryFilter');
+            const statusSelect = document.getElementById('statusFilter');
+            const typeSelect = document.getElementById('typeFilter');
+            const dtaFileSelect = document.getElementById('dtaFileFilter');
+            const searchInput = document.getElementById('searchInput');
+            const clearSearchBtn = document.getElementById('clearSearch');
+
+            countrySelect.addEventListener('change', applyFilters);
+            statusSelect.addEventListener('change', applyFilters);
+            typeSelect.addEventListener('change', applyFilters);
+            dtaFileSelect.addEventListener('change', applyFilters);
+            searchInput.addEventListener('input', applyFilters);
+            
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                applyFilters();
+            });
+        }
+
         function initializeDashboard() {
             populateFilters();
             updateStats();
             renderStudies();
+            setupEventListeners();
         }
 
         function populateFilters() {
@@ -1460,27 +1512,59 @@
                 option.textContent = status;
                 statusSelect.appendChild(option);
             });
-
-            // Add event listeners
-            countrySelect.addEventListener('change', applyFilters);
-            statusSelect.addEventListener('change', applyFilters);
-            document.getElementById('rpFilter').addEventListener('change', applyFilters);
-            document.getElementById('searchInput').addEventListener('input', applyFilters);
         }
 
         function applyFilters() {
             const countryFilter = document.getElementById('countryFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
-            const rpFilter = document.getElementById('rpFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const dtaFileFilter = document.getElementById('dtaFileFilter').value;
 
             filteredStudies = allStudies.filter(study => {
+                // Check DTA file status for filtering
+                let hasDtaFile = false;
+                let isSpreadsheetOnly = false;
+                
+                if (dtaFileMappings[study.code]) {
+                    if (dtaFileMappings[study.code].includes('[filename_TBD]') || dtaFileMappings[study.code].includes('[multiple_files]')) {
+                        isSpreadsheetOnly = true;
+                    } else {
+                        hasDtaFile = true;
+                    }
+                } else {
+                    isSpreadsheetOnly = true;
+                }
+
                 return (!countryFilter || study.country === countryFilter) &&
                        (!statusFilter || study.status === statusFilter) &&
-                       (!rpFilter || study.type === rpFilter) &&
+                       (!typeFilter || study.type === typeFilter) &&
                        (study.code.toLowerCase().includes(searchQuery) ||
                         study.title.toLowerCase().includes(searchQuery) ||
-                        study.country.toLowerCase().includes(searchQuery));
+                        study.country.toLowerCase().includes(searchQuery)) &&
+                       (!dtaFileFilter || 
+                        (dtaFileFilter === 'has_dta' && hasDtaFile) ||
+                        (dtaFileFilter === 'no_dta' && !hasDtaFile) ||
+                        (dtaFileFilter === 'spreadsheet_only' && isSpreadsheetOnly));
+            });
+
+            // Prioritize studies with DTA files in the results
+            filteredStudies.sort((a, b) => {
+                const aHasDta = dtaFileMappings[a.code] && !dtaFileMappings[a.code].includes('[filename_TBD]') && !dtaFileMappings[a.code].includes('[multiple_files]');
+                const bHasDta = dtaFileMappings[b.code] && !dtaFileMappings[b.code].includes('[filename_TBD]') && !dtaFileMappings[b.code].includes('[multiple_files]');
+                
+                // Studies with DTA files come first
+                if (aHasDta && !bHasDta) return -1;
+                if (!aHasDta && bHasDta) return 1;
+                
+                // Within each group, sort by priority
+                const priorityOrder = {'high': 3, 'medium': 2, 'low': 1};
+                const aPriority = priorityOrder[a.priority] || 0;
+                const bPriority = priorityOrder[b.priority] || 0;
+                if (aPriority !== bPriority) return bPriority - aPriority;
+                
+                // Finally, sort alphabetically by study code
+                return a.code.localeCompare(b.code);
             });
 
             renderStudies();
@@ -1492,6 +1576,8 @@
             document.getElementById('rp1Count').textContent = studyData.rp1.length;
             document.getElementById('rp2Count').textContent = studyData.rp2.length;
             document.getElementById('selectedCount').textContent = selectedStudies.length;
+            const dtaCoverage = (allStudies.filter(study => dtaFileMappings[study.code] && !dtaFileMappings[study.code].includes('[filename_TBD]') && !dtaFileMappings[study.code].includes('[multiple_files]')).length / allStudies.length) * 100;
+            document.getElementById('dtaCoverage').textContent = `${dtaCoverage.toFixed(2)}%`;
         }
 
         function renderStudies() {
@@ -1517,25 +1603,33 @@
             let fileStatus = 'missing';
             let linkClass = 'dta-link missing';
             let linkText = 'No DTA File';
+            let cardClass = '';
             
             // Get metadata from folder structure (this overrides any hardcoded values)
-            let dtaMetadata = { template: 'N/A', recipient: 'N/A', status: 'N/A' };
+            let dtaMetadata = { template: 'N/A', recipient: 'N/A', status: 'No DTA' };
             
             if (dtaFilePath) {
                 if (dtaFilePath.includes('[filename_TBD]') || dtaFilePath.includes('[multiple_files]')) {
                     fileStatus = 'placeholder';
                     linkClass = 'dta-link missing';
                     linkText = 'File TBD';
-                    // Still get metadata from folder even for placeholder files
-                    dtaMetadata = getDtaMetadataFromPath(dtaFilePath);
+                    cardClass = 'no-dta-file';
+                    dtaMetadata = { template: 'N/A', recipient: 'N/A', status: 'Pending' };
                 } else {
                     fileStatus = 'available';
                     linkClass = 'dta-link';
-                    linkText = 'View File Path';
+                    linkText = 'View DTA File';
+                    cardClass = 'has-dta-file';
                     // Get actual metadata from folder structure
                     dtaMetadata = getDtaMetadataFromPath(dtaFilePath);
                 }
+            } else {
+                cardClass = 'no-dta-file';
+                dtaMetadata = { template: 'N/A', recipient: 'N/A', status: 'Spreadsheet Only' };
             }
+
+            // Add card class for styling
+            card.classList.add(cardClass);
 
             card.innerHTML = `
                 <div class="study-header">
@@ -1546,6 +1640,11 @@
                     <div class="study-priority ${priorityClass}">${study.priority}</div>
                 </div>
                 <div class="study-description">${study.title}</div>
+                <div class="dta-metadata-header">
+                    <div class="dta-template">Template: <strong>${dtaMetadata.template.toUpperCase()}</strong></div>
+                    <div class="dta-recipient">Recipient: <strong>${dtaMetadata.recipient}</strong></div>
+                    <div class="dta-status">DTA Status: <strong>${dtaMetadata.status.replace('_', ' ').toUpperCase()}</strong></div>
+                </div>
                 <div class="study-meta">
                     <div class="meta-item">
                         <span>🌍</span>
@@ -1560,23 +1659,10 @@
                         <span>${study.type}</span>
                     </div>
                     <div class="meta-item">
-                        <span>📋</span>
-                        <span>Template: ${dtaMetadata.template.toUpperCase()}</span>
-                    </div>
-                    <div class="meta-item">
-                        <span>🏛️</span>
-                        <span>Recipient: ${dtaMetadata.recipient}</span>
-                    </div>
-                    <div class="meta-item">
-                        <span>📑</span>
-                        <span>DTA Status: ${dtaMetadata.status.replace('_', ' ').toUpperCase()}</span>
-                    </div>
-                    <div class="meta-item">
                         <span>📄</span>
                         <span>
                             <span class="file-status-indicator ${fileStatus}"></span>
                             <a href="#" class="${linkClass}" onclick="event.stopPropagation(); ${fileStatus === 'available' ? `openDtaFile('${study.code}')` : `alert('DTA file not available for ${study.code}')`}; return false;">${linkText}</a>
-                            ${fileStatus === 'available' ? '<small> (Local files only)</small>' : ''}
                         </span>
                     </div>
                 </div>
