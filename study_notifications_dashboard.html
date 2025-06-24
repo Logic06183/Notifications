@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notifications Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        select, input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            align-self: end;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .studies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .study-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .study-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .study-card.selected {
+            border-left-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .study-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .study-code {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .study-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-progress { background: #FFF3CD; color: #856404; }
+        .status-transferred { background: #D4EDDA; color: #155724; }
+        .status-ready { background: #CCE5FF; color: #004085; }
+        .status-dta { background: #F8D7DA; color: #721C24; }
+        .status-reactivate { background: #E2E3E5; color: #383D41; }
+
+        .study-description {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .study-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .meta-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        .notification-preview {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            display: none;
+        }
+
+        .notification-preview.show {
+            display: block;
+        }
+
+        .notification-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .notification-content {
+            display: grid;
+            gap: 25px;
+        }
+
+        .notification-section {
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .notification-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .priority-indicator {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-high { background: #FFE6E6; color: #D63384; }
+        .priority-medium { background: #FFF3CD; color: #856404; }
+        .priority-standard { background: #D4EDDA; color: #155724; }
+
+        .action-required {
+            background: rgba(220, 53, 69, 0.1);
+            border-left-color: #dc3545;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .studies-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .study-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>📊 Study Notifications Dashboard</h1>
+            <p>Generate customized DTA notifications for research studies</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-number" id="totalStudies">0</div>
+                <div class="stat-label">Total Studies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="rp1Count">0</div>
+                <div class="stat-label">RP1 Studies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="rp2Count">0</div>
+                <div class="stat-label">RP2 Studies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="selectedCount">0</div>
+                <div class="stat-label">Selected</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="countryFilter">Filter by Country</label>
+                <select id="countryFilter">
+                    <option value="">All Countries</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="statusFilter">Filter by Status</label>
+                <select id="statusFilter">
+                    <option value="">All Statuses</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="rpFilter">Filter by RP</label>
+                <select id="rpFilter">
+                    <option value="">All Studies</option>
+                    <option value="RP1">RP1 Studies</option>
+                    <option value="RP2">RP2 Studies</option>
+                </select>
+            </div>
+            <button class="generate-btn" onclick="generateNotification()">
+                🔔 Generate Notification
+            </button>
+        </div>
+
+        <div class="studies-grid" id="studiesGrid">
+            <!-- Studies will be populated here -->
+        </div>
+
+        <div class="notification-preview" id="notificationPreview">
+            <div class="notification-header">
+                <h2>📧 DTA Cloud Migration Notification</h2>
+                <p>Ready for distribution to study contacts</p>
+            </div>
+            <div class="notification-content" id="notificationContent">
+                <!-- Notification content will be generated here -->
+            </div>
+            <button class="copy-btn" onclick="copyNotification()">
+                📋 Copy Notification Text
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Combined study data from RP1 and RP2 files
+        const studyData = {
+            rp1: [
+                // Botswana
+                {
+                    code: "BWA072",
+                    title: "Study to Improve Survival Among HIV-Exposed Infants in Botswana - The Mpepu Study",
+                    country: "Botswana",
+                    status: "Transfer of Data in progress (UCT)",
+                    type: "RP1",
+                    sample_size: "3334",
+                    organization: "UCT",
+                    priority: "High",
+                    contact: "gajibola@bhp.org.bw"
+                },
+                // Ethiopia
+                {
+                    code: "ETH553",
+                    title: "Adverse maternal outcomes of adolescent pregnancy in Northwest Ethiopia: A prospective cohort study",
+                    country: "Ethiopia",
+                    status: "Transfer of Data in progress (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard",
+                    contact: "gechm2005@gmail.com"
+                },
+                {
+                    code: "ETH563",
+                    title: "Incidence of preterm premature rupture of membranes and inter-pregnancy interval studies",
+                    country: "Ethiopia",
+                    status: "Data transferred to UCT",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ETH570",
+                    title: "Effects of maternal alcohol consumption during pregnancy on adverse fetal outcomes",
+                    country: "Ethiopia",
+                    status: "Recheck eligibility after looking at the data (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Medium"
+                },
+                {
+                    code: "ETH501",
+                    title: "Maternal and Newborn Health in Ethiopia Partnership project",
+                    country: "Ethiopia",
+                    status: "DTA completed through Wits",
+                    type: "RP1",
+                    organization: "Wits",
+                    priority: "Standard",
+                    contact: "yirgurob@gmail.com"
+                },
+                // Ghana
+                {
+                    code: "GHA020",
+                    title: "Efficacy of Lipid-Based Nutrient Supplements (LNS) for Pregnant and Lactating Women - iLiNS-DYAD",
+                    country: "Ghana",
+                    status: "Data transferred to UCT",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "GHA075",
+                    title: "Enhanced AnteNatal Care service package for Malaria and Anaemia in Pregnancy EANC-MAP",
+                    country: "Ghana",
+                    status: "Entering into DTA (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Medium"
+                },
+                // Kenya
+                {
+                    code: "KEN086",
+                    title: "STOPMIP Kenya",
+                    country: "Kenya",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "Wits",
+                    priority: "Standard"
+                },
+                {
+                    code: "KEN539",
+                    title: "MomCare Project",
+                    country: "Kenya",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "Wits",
+                    priority: "Standard"
+                },
+                {
+                    code: "KEN531",
+                    title: "Testing Strategies for Couple Engagement in PMTCT and Family Health (Jamii Bora)",
+                    country: "Kenya",
+                    status: "Entering into DTA (Wits)",
+                    type: "RP1",
+                    organization: "Wits",
+                    priority: "High"
+                },
+                {
+                    code: "KEN030",
+                    title: "PRIMA - PrEP Implementation for Mothers in Antenatal Care",
+                    country: "Kenya",
+                    status: "Entering into DTA (Wits)",
+                    type: "RP1",
+                    organization: "Wits",
+                    priority: "High",
+                    contact: "gjohn@uw.edu"
+                },
+                {
+                    code: "KEN136",
+                    title: "Mama Salama",
+                    country: "Kenya",
+                    status: "Entering into DTA (Wits)",
+                    type: "RP1",
+                    organization: "Wits",
+                    priority: "Medium",
+                    contact: "gjohn@uw.edu"
+                },
+                // Malawi
+                {
+                    code: "MWI152",
+                    title: "Pregnancy intentions",
+                    country: "Malawi",
+                    status: "Data transferred to UCT",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MWI064",
+                    title: "PASTAL",
+                    country: "Malawi",
+                    status: "Recheck eligibility after looking at the data (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Medium"
+                },
+                {
+                    code: "MWI532",
+                    title: "APPLe",
+                    country: "Malawi",
+                    status: "Recheck eligibility after looking at the data (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Medium"
+                },
+                {
+                    code: "MWI534",
+                    title: "ANC/FRS",
+                    country: "Malawi",
+                    status: "Recheck eligibility after looking at the data (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Medium"
+                },
+                {
+                    code: "MWI021",
+                    title: "iLiNS-DYAD M",
+                    country: "Malawi",
+                    status: "harmonization coding check",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MWI086",
+                    title: "STOPMIP Malawi",
+                    country: "Malawi",
+                    status: "harmonization coding check",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MWI026",
+                    title: "LAIS",
+                    country: "Malawi",
+                    status: "harmonization coding check",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MWI198",
+                    title: "PEPI",
+                    country: "Malawi",
+                    status: "harmonization coding check",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MWI097",
+                    title: "The PURE Study",
+                    country: "Malawi",
+                    status: "problem with geolocation",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "High"
+                },
+                {
+                    code: "MWI088",
+                    title: "BAN",
+                    country: "Malawi",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MWI524",
+                    title: "POISE",
+                    country: "Malawi",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MWI094",
+                    title: "PRIME",
+                    country: "Malawi",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MWI049",
+                    title: "Interventions for Moderate Malnutrition in Pregnancy (Mamachiponde)",
+                    country: "Malawi",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                // Multicountry
+                {
+                    code: "MUL159",
+                    title: "Promoting Maternal and Infant Survival Everywhere (PROMISE) Protocol. PROMISE 1077BF",
+                    country: "Multicountry",
+                    status: "health check",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Medium"
+                },
+                {
+                    code: "MUL140",
+                    title: "PREGACT",
+                    country: "Multicountry",
+                    status: "harmonization coding check",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MUL006",
+                    title: "COSMIC",
+                    country: "Multicountry",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "MUL090",
+                    title: "PROMISE EBF - Safety and Efficacy of Exclusive Breastfeeding Promotion",
+                    country: "Multicountry",
+                    status: "Linking email sent",
+                    type: "RP1",
+                    organization: "WHC",
+                    priority: "Standard",
+                    contact: "Tanya.Doherty@mrc.ac.za"
+                },
+                // Nigeria
+                {
+                    code: "NGA548",
+                    title: "Prevalence, seroconversion and mother-to-child transmission of dual and triplex infections",
+                    country: "Nigeria",
+                    status: "Linking email sent",
+                    type: "RP1",
+                    organization: "WHC",
+                    priority: "Standard"
+                },
+                {
+                    code: "NGA547",
+                    title: "Ibadan Pregnancy Cohort Study",
+                    country: "Nigeria",
+                    status: "Entering into DTA (Wits)",
+                    type: "RP1",
+                    organization: "WHC",
+                    priority: "Standard",
+                    contact: "adeoyeikeola@yahoo.com",
+                    sample_size: "1745"
+                },
+                // Sierra Leone
+                {
+                    code: "SLE054",
+                    title: "Nutritional and Anti-infective Interventions for Malnutrition in Pregnancy (Beleuman Welbodi)",
+                    country: "Sierra Leone",
+                    status: "Linking email sent",
+                    type: "RP1",
+                    organization: "WHC",
+                    priority: "Standard",
+                    contact: "manarymj@wustl.edu"
+                },
+                // South Africa
+                {
+                    code: "ZAF581",
+                    title: "CAP088",
+                    country: "South Africa",
+                    status: "Pre-processing (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ZAF155",
+                    title: "COHORTS Birth to 20",
+                    country: "South Africa",
+                    status: "Data transferred to UCT",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ZAF192",
+                    title: "Goodstart",
+                    country: "South Africa",
+                    status: "Processed for mapping (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ZAF014",
+                    title: "GDM",
+                    country: "South Africa",
+                    status: "harmonization coding check",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ZAF358",
+                    title: "Low HIV incidence in pregnant and postpartum women receiving community-based prevention",
+                    country: "South Africa",
+                    status: "harmonization coding check",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ZAF357",
+                    title: "Effectiveness of community-based support for pregnant women living with HIV",
+                    country: "South Africa",
+                    status: "harmonization coding check",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ZAF124",
+                    title: "The Safe Passage Study",
+                    country: "South Africa",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ZAF600",
+                    title: "Healthy Mother Healthy Baby Programme",
+                    country: "South Africa",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ZAF055",
+                    title: "PMTCT South African couples",
+                    country: "South Africa",
+                    status: "Dataset ready for analysis",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                {
+                    code: "ZAF145",
+                    title: "Philani study",
+                    country: "South Africa",
+                    status: "Entering into DTA (Wits)",
+                    type: "RP1",
+                    organization: "Wits",
+                    priority: "Medium",
+                    contact: "markt@sun.ac.za"
+                },
+                {
+                    code: "ZAF515",
+                    title: "MACE - Mother and Child in the Environment birth cohort",
+                    country: "South Africa",
+                    status: "Entering into DTA (Wits)",
+                    type: "RP1",
+                    organization: "Wits",
+                    priority: "Medium",
+                    contact: "naidoon@ukzn.ac.za"
+                },
+                {
+                    code: "ZAF007",
+                    title: "DCHS - Drakenstein Child Health Study",
+                    country: "South Africa",
+                    status: "DTA being processed through WITS",
+                    type: "RP1",
+                    organization: "Wits",
+                    priority: "Standard",
+                    contact: "heather.zar@uct.ac.za"
+                },
+                {
+                    code: "ZAF106",
+                    title: "MATFLU - Influenza Vaccine Trial in HIV Uninfected Pregnant Women",
+                    country: "South Africa",
+                    status: "Linking email sent",
+                    type: "RP1",
+                    organization: "WHC",
+                    priority: "Standard",
+                    contact: "catherine.hill@wits-vida.org"
+                },
+                {
+                    code: "ZAF517",
+                    title: "PIMS - Prematurity Immunology in HIV-infected Mothers and their infants Study",
+                    country: "South Africa",
+                    status: "Linking email sent",
+                    type: "RP1",
+                    organization: "WHC-UCT",
+                    priority: "Standard",
+                    contact: "landon.myer@uct.ac.za"
+                },
+                // Tanzania
+                {
+                    code: "TZA380",
+                    title: "Medication exposure during pregnancy: pilot pharmacovigilance system",
+                    country: "Tanzania",
+                    status: "DTA with Jessica (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "Standard"
+                },
+                // Uganda
+                {
+                    code: "UGA077",
+                    title: "Uganda Peripartum Infection and Mortality UPIM study",
+                    country: "Uganda",
+                    status: "DTA with Jessica (UCT)",
+                    type: "RP1",
+                    sample_size: "4231",
+                    organization: "UCT",
+                    priority: "High",
+                    contact: "jngonzi@must.ac.ug"
+                },
+                // Zambia
+                {
+                    code: "ZMB343",
+                    title: "Epidemiology of malaria and curable STIs/RTIs among pregnant women",
+                    country: "Zambia",
+                    status: "DTA with Jessica (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "High",
+                    sample_size: "1086"
+                },
+                {
+                    code: "ZMB174",
+                    title: "Zambia Chlorhexidine Application Trial (ZamCAT)",
+                    country: "Zambia",
+                    status: "Transfer of Data in progress (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "High",
+                    sample_size: "39679"
+                },
+                {
+                    code: "ZMB137",
+                    title: "ZAPPS - Zambian Preterm Birth Prevention Study",
+                    country: "Zambia",
+                    status: "Transfer of Data in progress (UCT)",
+                    type: "RP1",
+                    organization: "UCT",
+                    priority: "High",
+                    sample_size: "1450"
+                }
+            ],
+            rp2: [
+                // All RP2 studies are South Africa based (Johannesburg sites)
+                {
+                    code: "JHB_WCRBara_36_CAPSTONE2",
+                    title: "CAPSTONE2 - Baloxavir marboxil efficacy study",
+                    country: "South Africa",
+                    status: "declined participation",
+                    type: "RP2",
+                    organization: "Boehringer-Ingelheim",
+                    priority: "Standard",
+                    nct: "NCT02949011",
+                    sample_size: "278"
+                },
+                {
+                    code: "JHB_MTN-SCHARP_012_CHARISMA",
+                    title: "CHARISMA - Community Health clinic model for Agency in Relationships",
+                    country: "South Africa",
+                    status: "declined participation",
+                    type: "RP2",
+                    organization: "WitsRHI",
+                    priority: "Standard",
+                    nct: "NCT04092114",
+                    sample_size: "407"
+                },
+                {
+                    code: "JHB_NHLS_38_Boston",
+                    title: "Boston Hero Group Database Platform",
+                    country: "South Africa",
+                    status: "Data currently unavailable",
+                    type: "RP2",
+                    organization: "NHLS",
+                    priority: "Standard"
+                },
+                {
+                    code: "JHB_PHRU_46_ENSEMBLE_COV2.S",
+                    title: "ENSEMBLE COV2.S - COVID-19 vaccine trial",
+                    country: "South Africa",
+                    status: "Data currently unavailable",
+                    type: "RP2",
+                    organization: "PHRU",
+                    priority: "Medium",
+                    nct: "NCT04505722",
+                    sample_size: "44325"
+                },
+                {
+                    code: "JHB_PHRU_48_PHOENIx_MDRTB",
+                    title: "PHOENIx - Multi-drug Resistant TB Study",
+                    country: "South Africa",
+                    status: "Data currently unavailable",
+                    type: "RP2",
+                    organization: "PHRU",
+                    priority: "Standard"
+                },
+                {
+                    code: "JHB_WitsRHI_49_RECOVERY_COVID19",
+                    title: "RECOVERY - COVID-19 Treatment Study",
+                    country: "South Africa",
+                    status: "Data currently unavailable",
+                    type: "RP2",
+                    organization: "WitsRHI",
+                    priority: "Standard",
+                    sample_size: "50000"
+                },
+                {
+                    code: "JHB_WRHI_39_HPTN084",
+                    title: "HPTN 084 - HIV Prevention Study",
+                    country: "South Africa",
+                    status: "Data currently unavailable",
+                    type: "RP2",
+                    organization: "WitsRHI",
+                    priority: "High",
+                    nct: "NCT03164564",
+                    sample_size: "382"
+                },
+                {
+                    code: "JHB_WRHI_Soweto_40_HPTN052",
+                    title: "HPTN052 - HIV Treatment as Prevention",
+                    country: "South Africa",
+                    status: "Data currently unavailable",
+                    type: "RP2",
+                    organization: "WitsRHI",
+                    priority: "Standard"
+                },
+                {
+                    code: "JHB_VIDA_50_PertussisVax_HIV_PregnantWomen",
+                    title: "Pertussis vaccination among HIV-infected and HIV-uninfected pregnant women",
+                    country: "South Africa",
+                    status: "Reactivate",
+                    type: "RP2",
+                    organization: "VIDA",
+                    priority: "High",
+                    nct: "NCT05264662",
+                    contact: "marta.nunes@wits-vida.org"
+                },
+                {
+                    code: "JHB_WCR_38_SPECTRA",
+                    title: "SPECTRA - COVID-19 Prevention Vaccine Study",
+                    country: "South Africa",
+                    status: "Reactivate",
+                    type: "RP2",
+                    organization: "VIDA/Clover",
+                    priority: "Standard",
+                    nct: "NCT04672395",
+                    sample_size: "31454"
+                },
+                {
+                    code: "JHB_CHRU_23_SOLIDARITY",
+                    title: "SOLIDARITY - COVID-19 Clinical Trial",
+                    country: "South Africa",
+                    status: "Reactivate",
+                    type: "RP2",
+                    organization: "CHRU",
+                    priority: "Standard",
+                    contact: "mrassool@witshealth.co.za"
+                },
+                {
+                    code: "JHB_CHRU_30_REMoxTB_ACTGA5349",
+                    title: "REMoxTB - Moxifloxacin TB Treatment Study",
+                    country: "South Africa",
+                    status: "Reactivate",
+                    type: "RP2",
+                    organization: "CHRU",
+                    priority: "Standard",
+                    nct: "NCT00864383",
+                    sample_size: "1931"
+                },
+                {
+                    code: "JHB_Ezin_43_RCT_COVID_Ribavirin_Nitazoxanide",
+                    title: "COVID-19 Ribavirin and Nitazoxanide Treatment Study",
+                    country: "South Africa",
+                    status: "Reactivate",
+                    type: "RP2",
+                    organization: "Ezintsha",
+                    priority: "Standard",
+                    nct: "NCT04563208",
+                    sample_size: "80"
+                },
+                {
+                    code: "JHB_PHRU_35_HVTN705_HPX2008",
+                    title: "HVTN 705/HPX2008 - HIV Prevention Vaccine Study",
+                    country: "South Africa",
+                    status: "Reactivate",
+                    type: "RP2",
+                    organization: "SCHARP_HVTN",
+                    priority: "Standard",
+                    nct: "NCT03060629",
+                    sample_size: "200"
+                },
+                {
+                    code: "JHB_PHRU_41_CoVPN3008_PF_Soweto",
+                    title: "CoVPN3008 - Pfizer COVID-19 Study",
+                    country: "South Africa",
+                    status: "Reactivate",
+                    type: "RP2",
+                    organization: "PHRU",
+                    priority: "Standard",
+                    nct: "NCT05168813"
+                }
+            ]
+        };
+
+        let allStudies = [...studyData.rp1, ...studyData.rp2];
+        let selectedStudies = [];
+        let filteredStudies = allStudies;
+
+        function initializeDashboard() {
+            populateFilters();
+            updateStats();
+            renderStudies();
+        }
+
+        function populateFilters() {
+            const countries = [...new Set(allStudies.map(s => s.country))].sort();
+            const statuses = [...new Set(allStudies.map(s => s.status))].sort();
+
+            const countrySelect = document.getElementById('countryFilter');
+            const statusSelect = document.getElementById('statusFilter');
+
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countrySelect.appendChild(option);
+            });
+
+            statuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                statusSelect.appendChild(option);
+            });
+
+            // Add event listeners
+            countrySelect.addEventListener('change', applyFilters);
+            statusSelect.addEventListener('change', applyFilters);
+            document.getElementById('rpFilter').addEventListener('change', applyFilters);
+        }
+
+        function applyFilters() {
+            const countryFilter = document.getElementById('countryFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const rpFilter = document.getElementById('rpFilter').value;
+
+            filteredStudies = allStudies.filter(study => {
+                return (!countryFilter || study.country === countryFilter) &&
+                       (!statusFilter || study.status === statusFilter) &&
+                       (!rpFilter || study.type === rpFilter);
+            });
+
+            renderStudies();
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalStudies').textContent = allStudies.length;
+            document.getElementById('rp1Count').textContent = studyData.rp1.length;
+            document.getElementById('rp2Count').textContent = studyData.rp2.length;
+            document.getElementById('selectedCount').textContent = selectedStudies.length;
+        }
+
+        function renderStudies() {
+            const grid = document.getElementById('studiesGrid');
+            grid.innerHTML = '';
+
+            filteredStudies.forEach(study => {
+                const card = createStudyCard(study);
+                grid.appendChild(card);
+            });
+        }
+
+        function createStudyCard(study) {
+            const card = document.createElement('div');
+            card.className = `study-card ${selectedStudies.includes(study.code) ? 'selected' : ''}`;
+            card.onclick = () => toggleStudySelection(study.code);
+
+            const statusClass = getStatusClass(study.status);
+            const priorityClass = getPriorityClass(study.priority);
+
+            card.innerHTML = `
+                <div class="study-header">
+                    <div>
+                        <div class="study-code">${study.code}</div>
+                        <div class="study-status ${statusClass}">${study.status}</div>
+                    </div>
+                </div>
+                <div class="study-description">${study.title}</div>
+                <div class="study-meta">
+                    <div class="meta-item">
+                        <span>🌍</span>
+                        <span>${study.country}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>🏢</span>
+                        <span>${study.organization || 'N/A'}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>⭐</span>
+                        <span class="priority-indicator ${priorityClass}">${study.priority || 'Standard'}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📁</span>
+                        <span>${study.type}</span>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function getStatusClass(status) {
+            if (status.includes('progress')) return 'status-progress';
+            if (status.includes('transferred')) return 'status-transferred';
+            if (status.includes('ready')) return 'status-ready';
+            if (status.includes('DTA')) return 'status-dta';
+            if (status.includes('Reactivate')) return 'status-reactivate';
+            return 'status-progress';
+        }
+
+        function getPriorityClass(priority) {
+            switch(priority?.toLowerCase()) {
+                case 'high': return 'priority-high';
+                case 'medium': return 'priority-medium';
+                default: return 'priority-standard';
+            }
+        }
+
+        function toggleStudySelection(code) {
+            if (selectedStudies.includes(code)) {
+                selectedStudies = selectedStudies.filter(c => c !== code);
+            } else {
+                selectedStudies.push(code);
+            }
+            renderStudies();
+            updateStats();
+        }
+
+        function generateNotification() {
+            if (selectedStudies.length === 0) {
+                alert('Please select at least one study to generate a notification.');
+                return;
+            }
+
+            const selectedStudyData = allStudies.filter(s => selectedStudies.includes(s.code));
+            const notificationContent = createNotificationContent(selectedStudyData);
+            
+            document.getElementById('notificationContent').innerHTML = notificationContent;
+            document.getElementById('notificationPreview').classList.add('show');
+            
+            // Scroll to notification
+            document.getElementById('notificationPreview').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+
+        function createNotificationContent(studies) {
+            const currentDate = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            let content = '';
+
+            studies.forEach((study, index) => {
+                const deadline = new Date();
+                deadline.setDate(deadline.getDate() + 5);
+                const deadlineStr = deadline.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+
+                content += `
+                    <div class="notification-section">
+                        <h3>📋 Study Information - ${study.code}</h3>
+                        <div class="study-stats">N = ${study.sample_size || 'TBD'}</div>
+                        <div class="study-stats">Country: ${study.country}</div>
+                        <div class="study-stats">DTA Type: DTA_v2</div>
+                        <div class="study-stats">Recipient: ${study.organization}</div>
+                        <p><strong>Study Title:</strong> ${study.title}</p>
+                    </div>
+
+                    <div class="notification-section">
+                        <h3>👥 Contact Information</h3>
+                        <p><strong>Primary Contact:</strong> ${study.contact || 'TBD'}<br>
+                        <strong>Institution:</strong> ${study.organization}<br>
+                        <strong>Study Code:</strong> ${study.code}</p>
+                    </div>
+
+                    <div class="notification-section">
+                        <h3>⚖️ Legal Compliance Requirements</h3>
+                        <p><strong>Applicable Legislation:</strong> ${getApplicableLegislation(study.country)}</p>
+                        <p><strong>Current Arrangement:</strong> ${study.status}</p>
+                        <p><strong>Compliance Focus:</strong> Cross-border data transfer regulations</p>
+                    </div>
+
+                    <div class="notification-section action-required">
+                        <h3>🚨 IMMEDIATE ACTION REQUIRED</h3>
+                        <p><strong>Response Deadline:</strong> 5 Business Days (by ${deadlineStr})</p>
+                        <p><strong>Required Confirmation:</strong></p>
+                        <ul style="padding-left: 20px; margin-top: 10px;">
+                            <li>Acknowledgment from ${study.country} and collaborating institutions</li>
+                            <li>Agreement to proceed with DTA amendment</li>
+                            <li>Confirmation of institutional review board notifications</li>
+                        </ul>
+                    </div>
+                `;
+
+                if (index < studies.length - 1) {
+                    content += '<hr style="margin: 30px 0; border: none; border-top: 2px solid #eee;">';
+                }
+            });
+
+            content += `
+                <div class="notification-section">
+                    <h3>📞 Project Management Contacts</h3>
+                    <p><strong>Data Management:</strong> HEAT Center Team<br>
+                    <strong>Legal Affairs:</strong> Legal Advisory Board<br>
+                    <strong>Technical Support:</strong> Data Analysis Platform Team</p>
+                </div>
+
+                <div class="notification-section">
+                    <h3>📧 Next Steps</h3>
+                    <p>Please review the attached Data Management Plan v2.2 and respond within the specified deadline. For questions or clarifications, contact the HEAT Center project management team.</p>
+                    <p><strong>Generated:</strong> ${currentDate}</p>
+                </div>
+            `;
+
+            return content;
+        }
+
+        function getApplicableLegislation(country) {
+            const legislation = {
+                'Uganda': 'Uganda Data Protection and Privacy Act 2019',
+                'Kenya': 'Kenya Data Protection Act 2019',
+                'South Africa': 'Protection of Personal Information Act (POPIA) 2020',
+                'Ethiopia': 'Ethiopian Data Protection Proclamation',
+                'Ghana': 'Ghana Data Protection Act 2012',
+                'Botswana': 'Botswana Data Protection Act 2018',
+                'Malawi': 'Malawi Data Protection Act'
+            };
+            return legislation[country] || `${country} Data Protection Legislation`;
+        }
+
+        function copyNotification() {
+            const content = document.getElementById('notificationContent').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#28a745';
+                }, 2000);
+            });
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html>
