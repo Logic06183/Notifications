@@ -5,6 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study Notifications Dashboard</title>
     <style>
+        :root {
+            --bg-color: #f8fafc;
+            --container-bg: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #666666;
+            --border-color: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --card-hover: #f1f5f9;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a202c;
+            --container-bg: #2d3748;
+            --text-color: #f7fafc;
+            --text-secondary: #a0aec0;
+            --border-color: #4a5568;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --card-hover: #374151;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,17 +33,18 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .dashboard-container {
             max-width: 1400px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px var(--shadow);
             padding: 30px;
         }
 
@@ -64,12 +85,12 @@
         .control-group label {
             font-weight: 600;
             margin-bottom: 8px;
-            color: #333;
+            color: var(--text-color);
         }
 
         select, input {
             padding: 12px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 14px;
             transition: border-color 0.3s;
@@ -82,7 +103,7 @@
 
         .search-input {
             padding: 12px;
-            border: 2px solid #ddd;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 14px;
             width: 100%;
@@ -146,6 +167,31 @@
             transform: translateY(-2px);
         }
 
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
         .studies-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -154,18 +200,21 @@
         }
 
         .study-card {
-            background: white;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px var(--shadow);
             border-left: 5px solid #667eea;
             transition: transform 0.3s, box-shadow 0.3s;
             cursor: pointer;
+            color: var(--text-color);
         }
 
         .study-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 25px var(--shadow);
+            background: var(--card-hover);
         }
 
         .study-card.selected {
@@ -202,7 +251,7 @@
         .status-reactivate { background: #E2E3E5; color: #383D41; }
 
         .study-description {
-            color: #666;
+            color: var(--text-secondary);
             line-height: 1.5;
             margin-bottom: 15px;
         }
@@ -227,10 +276,11 @@
         }
 
         .notification-preview {
-            background: white;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 30px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px var(--shadow);
             margin-top: 30px;
             display: none;
         }
@@ -262,7 +312,7 @@
 
         .notification-section h3 {
             margin-bottom: 15px;
-            color: #333;
+            color: var(--text-color);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -309,11 +359,12 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px var(--shadow);
         }
 
         .stat-number {
@@ -324,8 +375,55 @@
         }
 
         .stat-label {
-            color: #666;
+            color: var(--text-secondary);
             font-weight: 600;
+        }
+
+        .dta-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid #667eea;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .dta-link:hover {
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+        }
+
+        .dta-link.missing {
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .dta-link.missing:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .file-status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .file-status-indicator.available {
+            background: #27ae60;
+        }
+
+        .file-status-indicator.missing {
+            background: #e74c3c;
+        }
+
+        .file-status-indicator.placeholder {
+            background: #f39c12;
         }
 
         @media (max-width: 768px) {
@@ -419,9 +517,83 @@
                 📋 Copy Notification Text
             </button>
         </div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Dark Mode</button>
     </div>
 
     <script>
+        // DTA File Mappings - linking study codes to their respective files
+        const dtaFileMappings = {
+            "BWA072": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/2410710-01.DTA_HEAT001_v2.0_WHC_BWA072_FE.pdf",
+            "CAP088": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/DTA_2402820-01.CM_CAP088_SAHAPS_CAPRISA_WITS_FE 15 Apr 2024.pdf",
+            "DID261": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/DID261_[filename_TBD].pdf",
+            "EAT001": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/EAT001_[multiple_files].pdf",
+            "ETH501": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/DTA_WHC_ETH501_signed.pdf",
+            "ETH553": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/24033800-01.CM - ETH553_FE.pdf",
+            "ETH563": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_drafts_WHC/DTA_HEAT001_V2.0_WHC_ETH563.docx",
+            "ETH570": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/ETH570_DTA_Maternal Alcohol consumption_Dr Alemu_signed.pdf",
+            "GHA020": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_final_UCT/FE DTA-2025-0264 UCD - Cape Town Univ. DTA_HEAT001_v2.0_UCT_38344_GHA020.pdf",
+            "KEN086": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_UCT35447_KEN086_DUA_Standard_Template_v1.5 (1) LvA Edited 16.03.2023_signature.pdf",
+            "KEN531": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/KEN531_6839_6716_124 DTA_Template_HEAT001_v2.0_WHC_UABComments021925 _FE.pdf",
+            "KEN539": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/UT35438_DTA PAI-HEAT_KEN539_MomCare study_For Signature - signed.pdf",
+            "MUL090": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/HDID26143KR24 FE WHC_DTAv2_MUL090_2504370-01.CM.pdf",
+            "MUL159": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/230502_MUL159_IMPAACT SDUA Signed WHC.pdf",
+            "MUL352": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_drafts_WHC/DTA_Template_HEAT001_v2.0_WHC_MUL352.docx",
+            "MWI021": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_DTA_HEAT001_UCT35523_MWI021_MWI026_2023-05-16.pdf",
+            "MWI026": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_DTA_HEAT001_UCT35523_MWI021_MWI026_2023-05-16.pdf",
+            "MWI049": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_DTA_HEAT001_UCT35523_MWI049_2023-05-15.pdf",
+            "MWI064": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/DTA_HEAT001_UCT35664-MWI064-MWI534_20230329_v1_Final.pdf",
+            "MWI088": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_UCT35372_CDC_DUA_MWI088_15.02.2023-1AK CLEAN_23.03.2023_AK.pdf",
+            "MWI094": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/MWI094 PRIME_DTA_NHI-Individual participation Agreement_201223.pdf",
+            "MWI097": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/MWI097_WHC_PURE Study DTA Signed.pdf",
+            "MWI152": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_UCT35524_DTA_HEAT001_UCT35524-MWI152_10.05.2024.docx.pdf",
+            "MWI198": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/23071200_MWI198 and MWI524_DTA_POISE and PEPI with JHU_signed.pdf",
+            "MWI524": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/23071200_MWI198 and MWI524_DTA_POISE and PEPI with JHU_signed.pdf",
+            "MWI534": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/DTA_HEAT001_UCT35664-MWI064-MWI534_20230329_v1_Final.pdf",
+            "NGA547": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_drafts_WHC/DTA_NGA547_WHC TEMPLATE-UI and WITTS.docx",
+            "NGA548": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/9328_1551_DTA_HEAT001LEGAL signature_AGREEMENT_NGA548 28 6 24 EvW.pdf",
+            "SLE054": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/FE_DUA_with_WHC_SLE054 final.pdf",
+            "TZA079": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/FE_01212025_Agreement_for_DUA24-0995_Wits_Duggan_TZA079_TZA080.pdf",
+            "TZA080": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/FE_01212025_Agreement_for_DUA24-0995_Wits_Duggan_TZA079_TZA080.pdf",
+            "TZA380": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/UCT37159_UCT Signed_DTA_NIMR_TZA380.pdf",
+            "TZA556": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_DATA TRANSFER AGREEMENT_05042023_TZA556.pdf",
+            "UCT353": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/UCT353_[filename_TBD].pdf",
+            "UCT354": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/UCT354_[filename_TBD].pdf",
+            "UCT355": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/UCT355_[filename_TBD].pdf",
+            "UCT356": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/UCT356_[filename_TBD].pdf",
+            "UCT371": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/UCT371_[filename_TBD].pdf",
+            "UCT381": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/UCT381_[filename_TBD].pdf",
+            "UCT395": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_final_UCT/UCT395_[filename_TBD].pdf",
+            "ZAF014": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_DTA_HEAT001_UCT35526-ZAF014_20230329_v1_UP Signed.pdf",
+            "ZAF055": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/DTA_HEAT001_UCT35525-ZAF055_20230328_FE.pdf",
+            "ZAF106": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/23101700-01.DSA-VIDA studies_INCL ZAF106_WHC1_signed.pdf",
+            "ZAF124": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/ZAF124_Stellenbosch_WHC_Safe Passage DTA signed.pdf",
+            "ZAF145": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_drafts_WHC/20250430 S009731 DTA_Template_HEAT001_v2.0_WHC_ZAF145.docx",
+            "ZAF162": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/UCT39528_UCT studies_ZAF162_ZAF504_ZAF517_ZAF544_FE.pdf",
+            "ZAF163": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/DTA_2402820-01.CM_CAP088_SAHAPS_CAPRISA_WITS_FE 15 Apr 2024_ZAF163.pdf",
+            "ZAF192": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_12781 DTA_HEAT001_UCT35366-ZAF192_20230328_v1.pdf",
+            "ZAF357": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_DTA_HEAT001_20230328_UCT35599_ZAF357_ZAF358.pdf",
+            "ZAF358": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_through_UCT/FE_DTA_HEAT001_20230328_UCT35599_ZAF357_ZAF358.pdf",
+            "ZAF504": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/UCT39528_UCT studies_ZAF162_ZAF504_ZAF517_ZAF544_FE.pdf",
+            "ZAF517": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/UCT39528_UCT studies_ZAF162_ZAF504_ZAF517_ZAF544_FE.pdf",
+            "ZAF544": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_fully executed_WHC/UCT39528_UCT studies_ZAF162_ZAF504_ZAF517_ZAF544_FE.pdf",
+            "ZAF600": "/Users/craig/Downloads/Executed DTA's-selected/DTAs_though_WHC/2402810-01.DTA_ZAF600.pdf",
+            "ZMB137": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_final_UCT/FE_UCT39547_25-0842 UNC_UCT_ZMB137 ZAPPS.pdf",
+            "ZMB173": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_final_UCT/ZMB173_UCT39547_25-0842+UNC_UCT_FE.pdf",
+            "ZMB530": "/Users/craig/Downloads/Executed DTA's-selected/New DTAs_final_UCT/ZMB530_Hamer_BU_UNIVERSITY OF CAPE TOWN_DTA_Template_HEAT001_FE.pdf"
+        };
+
+        // Function to open DTA file
+        function openDtaFile(studyCode) {
+            const filePath = dtaFileMappings[studyCode];
+            if (filePath) {
+                // Use file:// protocol to open local files
+                const fileUrl = 'file://' + encodeURIComponent(filePath).replace(/%2F/g, '/');
+                window.open(fileUrl, '_blank');
+            } else {
+                alert(`DTA file not found for study ${studyCode}`);
+            }
+        }
+
         // Combined study data from RP1 and RP2 files
         const studyData = {
             rp1: [
@@ -1395,6 +1567,24 @@
             const statusClass = getStatusClass(study.status);
             const priorityClass = getPriorityClass(study.priority);
 
+            // Check if DTA file exists and determine status
+            const dtaFilePath = dtaFileMappings[study.code];
+            let fileStatus = 'missing';
+            let linkClass = 'dta-link missing';
+            let linkText = 'No DTA File';
+            
+            if (dtaFilePath) {
+                if (dtaFilePath.includes('[filename_TBD]') || dtaFilePath.includes('[multiple_files]')) {
+                    fileStatus = 'placeholder';
+                    linkClass = 'dta-link missing';
+                    linkText = 'File TBD';
+                } else {
+                    fileStatus = 'available';
+                    linkClass = 'dta-link';
+                    linkText = 'View DTA';
+                }
+            }
+
             card.innerHTML = `
                 <div class="study-header">
                     <div>
@@ -1410,15 +1600,34 @@
                     </div>
                     <div class="meta-item">
                         <span>🏢</span>
-                        <span>${study.organization || 'N/A'}</span>
+                        <span>${study.organization}</span>
                     </div>
                     <div class="meta-item">
-                        <span>⭐</span>
-                        <span class="priority-indicator ${priorityClass}">${study.priority || 'Standard'}</span>
+                        <span>📊</span>
+                        <span>${study.sample_size || 'N/A'} participants</span>
                     </div>
                     <div class="meta-item">
                         <span>📁</span>
                         <span>${study.type}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📄</span>
+                        <span>
+                            <span class="file-status-indicator ${fileStatus}"></span>
+                            <a href="#" class="${linkClass}" onclick="event.stopPropagation(); ${fileStatus === 'available' ? `openDtaFile('${study.code}')` : `alert('DTA file not available for ${study.code}')`}; return false;">${linkText}</a>
+                        </span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📋</span>
+                        <span>Template: ${study.dta_template || 'N/A'}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>🏛️</span>
+                        <span>Recipient: ${study.main_recipient || 'N/A'}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📑</span>
+                        <span>Status: ${study.dta_status || 'N/A'}</span>
                     </div>
                 </div>
             `;
@@ -1606,6 +1815,10 @@
             a.href = url;
             a.download = 'study_data.csv';
             a.click();
+        }
+
+        function toggleTheme() {
+            document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
         }
 
         // Initialize dashboard when page loads
