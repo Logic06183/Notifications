@@ -603,8 +603,21 @@
             "ZAF600": "https://logic06183.github.io/Notifications/Executed%20DTA's-selected/DTAs_though_WHC/2402810-01.DTA_ZAF600.pdf",
             "ZMB137": "https://logic06183.github.io/Notifications/Executed%20DTA's-selected/New%20DTAs_final_UCT/FE_UCT39547_25-0842%20UNC_UCT_ZMB137%20ZAPPS.pdf",
             "ZMB173": "https://logic06183.github.io/Notifications/Executed%20DTA's-selected/New%20DTAs_final_UCT/ZMB173_UCT39547_25-0842+UNC_UCT_FE.pdf",
-            "ZMB530": "https://logic06183.github.io/Notifications/Executed%20DTA's-selected/New%20DTAs_final_UCT/ZMB530_Hamer_BU_UNIVERSITY%20OF%20CAPE%20TOWN_DTA_Template_HEAT001_FE.pdf"
+            "ZMB530": "https://logic06183.github.io/Notifications/Executed%20DTA's-selected/New%20DTAs_final_UCT/ZMB530_Hamer_BU_UNIVERSITY%20OF%20CAPE%20TOWN_DTA_Template_HEAT001_FE.pdf",
+            
+            // RP2 Studies from Executed DTAs folder
+            "RP2_EZintsha": "https://logic06183.github.io/Notifications/Executed%20DTAs/2309620-01.DSA_Ezintsha%20DTA.pdf",
+            "RP2_WHC": "https://logic06183.github.io/Notifications/Executed%20DTAs/2309760-01.DTA_WHC%20signed.pdf",
+            "RP2_VIDA": "https://logic06183.github.io/Notifications/Executed%20DTAs/23101700-01.DSA-signed%205%20VIDA%20studies.pdf",
+            "RP2_MEAKI": "https://logic06183.github.io/Notifications/Executed%20DTAs/2401510-01.DTA_MEAKI_MFC.pdf",
+            "RP2_MIRA": "https://logic06183.github.io/Notifications/Executed%20DTAs/24061620-01.CM_MIRA.pdf",
+            "RP2_CHARISMA": "https://logic06183.github.io/Notifications/Executed%20DTAs/2406170-01.CM_DSA%20_CHARISMAsigned.pdf",
+            "RP2_BMDCART": "https://logic06183.github.io/Notifications/Executed%20DTAs/24071090-01.CM_BMDCART_MFC.pdf",
+            "RP2_MLTF": "https://logic06183.github.io/Notifications/Executed%20DTAs/9360_8408_DSA_MLTF.pdf"
         };
+
+        // Notification tracking - track which studies have had notifications sent
+        let notificationsSent = JSON.parse(localStorage.getItem('notificationsSent') || '{}');
 
         // Function to derive DTA metadata from folder path
         function getDtaMetadataFromPath(filePath) {
