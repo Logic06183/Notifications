@@ -1497,6 +1497,12 @@
             });
         }
 
+        function toggleNotificationSent(code, isChecked){
+            notificationsSent[code]=isChecked;
+            localStorage.setItem('notificationsSent', JSON.stringify(notificationsSent));
+            applyFilters(); // re-render to update class coloring/stats
+        }
+
         function initializeDashboard() {
             populateFilters();
             updateStats();
@@ -1588,6 +1594,17 @@
             document.getElementById('rp1Count').textContent = studyData.rp1.length;
             document.getElementById('rp2Count').textContent = studyData.rp2.length;
             document.getElementById('selectedCount').textContent = selectedStudies.length;
+            const notifiedCount = Object.values(notificationsSent).filter(v=>v).length;
+            let notifiedStat=document.getElementById('notifiedCount');
+            if(!notifiedStat){
+                const statBar=document.querySelector('.stats-bar');
+                const el=document.createElement('div');
+                el.className='stat-card';
+                el.innerHTML=`<div class="stat-number" id="notifiedCount">${notifiedCount}</div><div class="stat-label">Notified</div>`;
+                statBar.appendChild(el);
+            }else{
+                notifiedStat.textContent=notifiedCount;
+            }
             const dtaCoverage = (allStudies.filter(study => dtaFileMappings[study.code] && !dtaFileMappings[study.code].includes('[filename_TBD]') && !dtaFileMappings[study.code].includes('[multiple_files]')).length / allStudies.length) * 100;
             document.getElementById('dtaCoverage').textContent = `${dtaCoverage.toFixed(2)}%`;
         }
@@ -1604,7 +1621,8 @@
 
         function createStudyCard(study) {
             const card = document.createElement('div');
-            card.className = `study-card ${selectedStudies.includes(study.code) ? 'selected' : ''}`;
+            const notified = notificationsSent[study.code];
+            card.className = `study-card ${selectedStudies.includes(study.code) ? 'selected' : ''} ${notified ? 'notified' : ''}`;
             card.onclick = () => toggleStudySelection(study.code);
 
             const statusClass = getStatusClass(study.status);
@@ -1676,6 +1694,12 @@
                             <span class="file-status-indicator ${fileStatus}"></span>
                             <a href="#" class="${linkClass}" onclick="event.stopPropagation(); ${fileStatus === 'available' ? `openDtaFile('${study.code}')` : `alert('DTA file not available for ${study.code}')`}; return false;">${linkText}</a>
                         </span>
+                    </div>
+                    <div class="meta-item">
+                        <label style="display:flex;align-items:center;cursor:pointer;" onclick="event.stopPropagation();">
+                            <input type="checkbox" ${notified ? 'checked' : ''} onchange="toggleNotificationSent('${study.code}', this.checked)"/>
+                            <span style="margin-left:6px;">Notified</span>
+                        </label>
                     </div>
                 </div>
             `;
